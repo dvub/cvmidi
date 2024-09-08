@@ -1,6 +1,9 @@
 # $env:OPENCV_LOG_LEVEL = "DEBUG"
 # pipenv run python main.py
 
+# https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker
+# https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker/python
+
 import mediapipe as mp
 from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
@@ -15,6 +18,8 @@ FONT_SIZE = 1
 FONT_THICKNESS = 1
 HANDEDNESS_TEXT_COLOR = (88, 205, 54)  # vibrant green
 
+# this very nice function came from here
+# https://colab.research.google.com/github/googlesamples/mediapipe/blob/main/examples/hand_landmarker/python/hand_landmarker.ipynb#scrollTo=_JVO3rvPD4RN&uniqifier=1
 
 def draw_landmarks_on_image(rgb_image, detection_result):
     hand_landmarks_list = detection_result.hand_landmarks
@@ -78,14 +83,12 @@ options = HandLandmarkerOptions(
 )
 with HandLandmarker.create_from_options(options) as landmarker:
     # The landmarker is initialized. Use it here.
-
-    # begin
     cap = cv2.VideoCapture(0)
 
     while True:
         # read the current frame
         _, frame = cap.read()
-
+        frame = cv2.flip(frame, 1)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
 
         # TODO:
@@ -96,7 +99,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
         result = landmarker.detect_for_video(mp_image, frame_timestamp)
         annotated_image = draw_landmarks_on_image(mp_image.numpy_view(), result)
 
-        cv2.imshow("Output", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
+        cv2.imshow("Output", annotated_image)
         if cv2.waitKey(1) == ord("q"):
             break
 
