@@ -1,14 +1,10 @@
+'''This module should probably have a decent docstring'''
+
 # common imports
 import math
 import numpy as np
 
-# TODO:
-# fix broken opencv imports for the love of god
 
-# https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker/python
-import mediapipe as mp
-from mediapipe import solutions
-from mediapipe.framework.formats import landmark_pb2
 
 # this is supposedly a fix for long VideoCapture open times on windows with Logi webcams.
 # Didn't work for me though
@@ -16,15 +12,28 @@ from mediapipe.framework.formats import landmark_pb2
 # os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
 import cv2
 
+# https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker/python
+# import mediapipe
+# from mediapipe.tasks import python
+# from mediapipe.tasks.python import vision
+
+from mediapipe import solutions
+# pylint seems to REALLY hate this for some reason
+from mediapipe.framework.formats import landmark_pb2
+
+
 MARGIN = 10  # pixels
 FONT_SIZE = 1
 FONT_THICKNESS = 1
 HANDEDNESS_TEXT_COLOR = (88, 205, 54)  # vibrant green
 
+# TODO
+# should the math and image annotation be 2 separate functions?
 
 # TODO
 # this should potentially return an array
 # if the array is empty, no hands are present, etc.
+
 def calculate_distance(detection_result):
     """IDK DOCSTRING OR WHATEVER"""
     hand_landmarks_list = detection_result.hand_landmarks
@@ -70,7 +79,6 @@ def annotate_image(rgb_image, detection_result, text):
     for _, hand_landmarks in enumerate(hand_landmarks_list):
 
         base = hand_landmarks[0]
-
         fingertips = [
             hand_landmarks[4],
             hand_landmarks[8],
@@ -108,9 +116,11 @@ def annotate_image(rgb_image, detection_result, text):
         # this is kind of black magic imo
 
         # Draw the hand landmarks.
+    
         hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
         hand_landmarks_proto.landmark.extend(
             [
+            
                 landmark_pb2.NormalizedLandmark(
                     x=landmark.x, y=landmark.y, z=landmark.z
                 )
@@ -144,7 +154,8 @@ def get_camera_status():
             is_working = False
             print(f"Port {dev_port} is NOT WORKING.")
         else:
-            is_reading, img = camera.read()
+            # we don't care about the image, just if it's reading or not
+            is_reading, _ = camera.read()
             w = camera.get(3)
             h = camera.get(4)
             if is_reading:

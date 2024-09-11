@@ -1,3 +1,5 @@
+''' maybe I should figure out how to prevent pylint from yelling at me for not having this '''
+
 # pipenv run python main.py
 
 # windows opencv debugging
@@ -13,24 +15,28 @@ import util
 import mediapipe as mp
 
 
-# WHY DONT YOU WORK
-from mediapipe.framework.formats import landmark_pb2
-
 # this is supposedly a fix for long VideoCapture open times on windows with Logi webcams.
 # Didn't work for me though
 # import os
 # os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
-from cv2 import cv2
+import cv2
 import mido
+
+
+# I'm not sure why these were declared in google's code example
+# but yeah
+BaseOptions = mp.tasks.BaseOptions
+HandLandmarker = mp.tasks.vision.HandLandmarker
+HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
+VisionRunningMode = mp.tasks.vision.RunningMode
 
 MARGIN = 10  # pixels
 FONT_SIZE = 1
 FONT_THICKNESS = 1
 HANDEDNESS_TEXT_COLOR = (88, 205, 54)  # vibrant green
 
-
 def main():
-    '''fuck off '''
+    """fuck off"""
     # SETUP
 
     print("Wecome to CV-MIDI.")
@@ -47,12 +53,14 @@ def main():
 
     if system == "Windows":
         print(
-            "WARNING: Virtual MIDI ports are not supported by Windows natively. \n Please install a tool such as loopMIDI (https://www.tobias-erichsen.de/software/loopmidi.html) first."
+            '''WARNING: Virtual MIDI ports are not supported by Windows natively. 
+            Please install a tool such as loopMIDI (https://www.tobias-erichsen.de/software/loopmidi.html) first.'''
         )
 
         print()
 
         print("Detecting current ports...")
+
         current_midi_inputs = mido.get_input_names()
         for index, value in enumerate(current_midi_inputs, start=1):
             print(f"{index}. {value}")
@@ -77,11 +85,6 @@ def main():
     util.get_camera_status()
 
     # mediapipe configuration
-    BaseOptions = mp.tasks.BaseOptions
-    HandLandmarker = mp.tasks.vision.HandLandmarker
-    HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
-    VisionRunningMode = mp.tasks.vision.RunningMode
-
     # Create a hand landmarker instance with the video mode:
     options = HandLandmarkerOptions(
         base_options=BaseOptions(model_asset_path="hand_landmarker.task"),
@@ -122,14 +125,19 @@ def main():
             if previous_value != value:
                 print(f"{frame_timestamp}: NEW VALUE DETECTED.. sending MIDI message")
                 cc_message = mido.Message(
-                    "control_change", channel=channel, control=control_number, value=value
+                    "control_change",
+                    channel=channel,
+                    control=control_number,
+                    value=value,
                 )
                 midi_port.send(cc_message)
 
             previous_value = value
 
             # draw all the fancy stuff on the image
-            annotated_image = util.annotate_image(mp_image.numpy_view(), result, f"CC: {value}")
+            annotated_image = util.annotate_image(
+                mp_image.numpy_view(), result, f"CC: {value}"
+            )
             # show the annotated image
             cv2.imshow("Output", annotated_image)
             if cv2.waitKey(1) == ord("q"):
@@ -137,6 +145,7 @@ def main():
 
         cap.release()
         cv2.destroyAllWindows()
+
 
 if __name__ == "__main__":
     main()
