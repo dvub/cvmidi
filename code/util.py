@@ -1,7 +1,9 @@
 # common imports
-import platform
+import math
 import numpy as np
 
+# TODO:
+# fix broken opencv imports for the love of god
 
 # https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker/python
 import mediapipe as mp
@@ -24,13 +26,15 @@ HANDEDNESS_TEXT_COLOR = (88, 205, 54)  # vibrant green
 # this should potentially return an array
 # if the array is empty, no hands are present, etc.
 def calculate_distance(detection_result):
+    """IDK DOCSTRING OR WHATEVER"""
     hand_landmarks_list = detection_result.hand_landmarks
-    handedness_list = detection_result.handedness
+    # i honestly do not care about handedness
+    # handedness_list = detection_result.handedness
 
     dist_sum = 0
-    # Loop through the detected hands to visualize.
-    for idx in range(len(hand_landmarks_list)):
-        hand_landmarks = hand_landmarks_list[idx]
+    # Loop through the detected HANDS to visualize.
+    # therefore, this should run twice AT MOST
+    for _, hand_landmarks in enumerate(hand_landmarks_list):
 
         base = hand_landmarks[0]
         fingertips = [
@@ -56,14 +60,14 @@ def calculate_distance(detection_result):
 # source:
 # https://colab.research.google.com/github/googlesamples/mediapipe/blob/main/examples/hand_landmarker/python/hand_landmarker.ipynb#scrollTo=_JVO3rvPD4RN&uniqifier=1
 def annotate_image(rgb_image, detection_result, text):
+    ''' takes an image as input and draws hands as well as values '''
     hand_landmarks_list = detection_result.hand_landmarks
-    handedness_list = detection_result.handedness
+    # handedness_list = detection_result.handedness
     annotated_image = np.copy(rgb_image)
     height, width, _ = annotated_image.shape
 
     # Loop through the detected hands to visualize.
-    for idx in range(len(hand_landmarks_list)):
-        hand_landmarks = hand_landmarks_list[idx]
+    for _, hand_landmarks in enumerate(hand_landmarks_list):
 
         base = hand_landmarks[0]
 
@@ -74,7 +78,7 @@ def annotate_image(rgb_image, detection_result, text):
             hand_landmarks[16],
             hand_landmarks[20],
         ]
-        
+
         # Green color in BGR
         color = (255, 255, 255)
 
@@ -123,11 +127,11 @@ def annotate_image(rgb_image, detection_result, text):
 
     return annotated_image
 
-
+# modified version of an answer from SO:
 # https://stackoverflow.com/questions/57577445/list-available-cameras-opencv-python
-def list_ports():
+def get_camera_status():
     """
-    Test the ports and returns a tuple with the available ports
+    Test all camera ports and returns a tuple with the available ports
     and the ones that are working.
     """
     is_working = True
@@ -138,21 +142,16 @@ def list_ports():
         camera = cv2.VideoCapture(dev_port)
         if not camera.isOpened():
             is_working = False
-            print("Port %s is not working." % dev_port)
+            print(f"Port {dev_port} is NOT WORKING.")
         else:
             is_reading, img = camera.read()
             w = camera.get(3)
             h = camera.get(4)
             if is_reading:
-                print(
-                    "Port %s is working and reads images (%s x %s)" % (dev_port, h, w)
-                )
+                print(f"Port {dev_port} is working and reads images ({h} x {w})")
                 working_ports.append(dev_port)
             else:
-                print(
-                    "Port %s for camera ( %s x %s) is present but does not reads."
-                    % (dev_port, h, w)
-                )
+                print(f"Port {dev_port} ({h} x {w} is present but DOES NOT READ)")
                 available_ports.append(dev_port)
         dev_port += 1
     return available_ports, working_ports
