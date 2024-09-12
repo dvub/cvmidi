@@ -1,4 +1,4 @@
-''' maybe I should figure out how to prevent pylint from yelling at me for not having this '''
+"""maybe I should figure out how to prevent pylint from yelling at me for not having this"""
 
 # pipenv run python main.py
 
@@ -9,6 +9,7 @@
 import time
 import platform
 
+from intro import intro
 import util
 
 # https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker/python
@@ -35,54 +36,9 @@ FONT_SIZE = 1
 FONT_THICKNESS = 1
 HANDEDNESS_TEXT_COLOR = (88, 205, 54)  # vibrant green
 
+
 def main():
-    """fuck off"""
-    # SETUP
-
-    print("Wecome to CV-MIDI.")
-    print()
-    print("MIDI PORT SETUP")
-    print()
-    # platform detection
-    print("Detecting OS/platform...")
-    system = platform.system()
-    # system = "Windows"
-    print(f"Your current platform seems to be: {system}")
-
-    midi_port = 0
-
-    if system == "Windows":
-        print(
-            '''WARNING: Virtual MIDI ports are not supported by Windows natively. 
-            Please install a tool such as loopMIDI (https://www.tobias-erichsen.de/software/loopmidi.html) first.'''
-        )
-
-        print()
-
-        print("Detecting current ports...")
-
-        current_midi_inputs = mido.get_input_names()
-        for index, value in enumerate(current_midi_inputs, start=1):
-            print(f"{index}. {value}")
-
-        # TODO
-        # some validation is needed here
-        num = int(input("Enter the port number you'd like to use:\n"))
-        target_index = num - 1
-
-        midi_port = mido.open_output(current_midi_inputs[target_index])
-
-    else:
-        print()
-        # TODO
-        # allow override here
-        print("Creating a new Virtual MIDI Port. Is that OKAY?")
-
-        midi_port = mido.open_output("CV-MIDI (Virtual)", virtual=True)
-
-    print("VIDEO CAPTURE SETUP")
-    print()
-    util.get_camera_status()
+    midi_port, video_port = intro()
 
     # mediapipe configuration
     # Create a hand landmarker instance with the video mode:
@@ -96,7 +52,7 @@ def main():
     with HandLandmarker.create_from_options(options) as landmarker:
         # The landmarker is initialized. Use it here.
         # cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        cap = cv2.VideoCapture(32)
+        cap = cv2.VideoCapture(video_port)
 
         while True:
             # read the current frame

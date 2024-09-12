@@ -1,9 +1,8 @@
-'''This module should probably have a decent docstring'''
+"""This module should probably have a decent docstring"""
 
 # common imports
 import math
 import numpy as np
-
 
 
 # this is supposedly a fix for long VideoCapture open times on windows with Logi webcams.
@@ -18,6 +17,7 @@ import cv2
 # from mediapipe.tasks.python import vision
 
 from mediapipe import solutions
+
 # pylint seems to REALLY hate this for some reason
 from mediapipe.framework.formats import landmark_pb2
 
@@ -34,6 +34,7 @@ HANDEDNESS_TEXT_COLOR = (88, 205, 54)  # vibrant green
 # this should potentially return an array
 # if the array is empty, no hands are present, etc.
 
+
 def calculate_distance(detection_result):
     """IDK DOCSTRING OR WHATEVER"""
     hand_landmarks_list = detection_result.hand_landmarks
@@ -44,7 +45,6 @@ def calculate_distance(detection_result):
     # Loop through the detected HANDS to visualize.
     # therefore, this should run twice AT MOST
     for _, hand_landmarks in enumerate(hand_landmarks_list):
-
         base = hand_landmarks[0]
         fingertips = [
             hand_landmarks[4],
@@ -69,7 +69,7 @@ def calculate_distance(detection_result):
 # source:
 # https://colab.research.google.com/github/googlesamples/mediapipe/blob/main/examples/hand_landmarker/python/hand_landmarker.ipynb#scrollTo=_JVO3rvPD4RN&uniqifier=1
 def annotate_image(rgb_image, detection_result, text):
-    ''' takes an image as input and draws hands as well as values '''
+    """takes an image as input and draws hands as well as values"""
     hand_landmarks_list = detection_result.hand_landmarks
     # handedness_list = detection_result.handedness
     annotated_image = np.copy(rgb_image)
@@ -77,7 +77,6 @@ def annotate_image(rgb_image, detection_result, text):
 
     # Loop through the detected hands to visualize.
     for _, hand_landmarks in enumerate(hand_landmarks_list):
-
         base = hand_landmarks[0]
         fingertips = [
             hand_landmarks[4],
@@ -116,11 +115,10 @@ def annotate_image(rgb_image, detection_result, text):
         # this is kind of black magic imo
 
         # Draw the hand landmarks.
-    
+
         hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
         hand_landmarks_proto.landmark.extend(
             [
-            
                 landmark_pb2.NormalizedLandmark(
                     x=landmark.x, y=landmark.y, z=landmark.z
                 )
@@ -136,33 +134,3 @@ def annotate_image(rgb_image, detection_result, text):
         )
 
     return annotated_image
-
-# modified version of an answer from SO:
-# https://stackoverflow.com/questions/57577445/list-available-cameras-opencv-python
-def get_camera_status():
-    """
-    Test all camera ports and returns a tuple with the available ports
-    and the ones that are working.
-    """
-    is_working = True
-    dev_port = 0
-    working_ports = []
-    available_ports = []
-    while is_working:
-        camera = cv2.VideoCapture(dev_port)
-        if not camera.isOpened():
-            is_working = False
-            print(f"Port {dev_port} is NOT WORKING.")
-        else:
-            # we don't care about the image, just if it's reading or not
-            is_reading, _ = camera.read()
-            w = camera.get(3)
-            h = camera.get(4)
-            if is_reading:
-                print(f"Port {dev_port} is working and reads images ({h} x {w})")
-                working_ports.append(dev_port)
-            else:
-                print(f"Port {dev_port} ({h} x {w} is present but DOES NOT READ)")
-                available_ports.append(dev_port)
-        dev_port += 1
-    return available_ports, working_ports
